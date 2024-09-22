@@ -45,8 +45,13 @@ app = Dash(__name__)
 
 # Layout de la aplicación
 app.layout = html.Div([
-    dcc.Graph(id='graph'),
-    html.Button('Mostrar más nodos', id='button', n_clicks=0)
+    dcc.Graph(id='graph', style={'height': '100vh'}),
+    html.Button('Mostrar más nodos', id='button', n_clicks=0, style={
+        'position': 'fixed',
+        'top': '10px',
+        'right': '10px',
+        'zIndex': 1000
+    })
 ])
 
 # Callback para actualizar el gráfico
