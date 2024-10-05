@@ -1,6 +1,7 @@
 import plotly.graph_objs as go
 import networkx as nx
 import pandas as pd
+import random
 from dash import Dash, dcc, html, Input, Output
 
 # Cargar el dataset desde un archivo CSV
@@ -16,10 +17,25 @@ for idx, row in data.iterrows():
 
 # Añadir aristas basadas en diferencias entre nodos
 for i in range(len(data)):
-    for j in range(i + 1, i + 10):  # Limitar las conexiones a nodos cercanos
-        if j < len(data):
-            node_i = f"{data.iloc[i]['Region']} - {data.iloc[i]['Crop_Type']} - {data.iloc[i]['Year']}"
+    node_i = f"{data.iloc[i]['Region']} - {data.iloc[i]['Crop_Type']} - {data.iloc[i]['Year']}"
+    connected_nodes = set()
+    
+    # Conectar al menos a un nodo cercano
+    if i + 1 < len(data):
+        node_j = f"{data.iloc[i + 1]['Region']} - {data.iloc[i + 1]['Crop_Type']} - {data.iloc[i + 1]['Year']}"
+        G.add_edge(node_i, node_j, weight=1.0)  # Peso arbitrario para asegurar la conexión
+        connected_nodes.add(node_j)
+    
+    # Añadir conexiones adicionales de manera aleatoria
+    available_nodes = list(range(i + 2, len(data)))
+    num_connections = min(4, len(available_nodes))
+    if num_connections > 0:
+        for j in random.sample(available_nodes, num_connections):  # Limitar las conexiones a nodos aleatorios cercanos
             node_j = f"{data.iloc[j]['Region']} - {data.iloc[j]['Crop_Type']} - {data.iloc[j]['Year']}"
+            
+            # Evitar duplicar conexiones
+            if node_j in connected_nodes:
+                continue
             
             # Calcular la diferencia entre los nodos
             temp_diff = abs(data.iloc[i]['Average_Temperature_C'] - data.iloc[j]['Average_Temperature_C'])
@@ -39,6 +55,7 @@ for i in range(len(data)):
             
             # Añadir la arista con el peso calculado
             G.add_edge(node_i, node_j, weight=weight)
+            connected_nodes.add(node_j)
 
 # Crear la aplicación Dash
 app = Dash(__name__)
@@ -90,10 +107,17 @@ def update_graph(n_clicks):
     # Extraer las coordenadas de los nodos
     node_x = []
     node_y = []
+    node_color = []
     for node in subgraph.nodes():
         x, y = pos[node]
         node_x.append(x)
         node_y.append(y)
+        node_color.append(subgraph.nodes[node]['Region'])  # Usar la región para determinar el color
+    
+    # Asignar colores únicos a cada región
+    unique_regions = list(set(node_color))
+    color_map = {region: i for i, region in enumerate(unique_regions)}
+    node_color = [color_map[region] for region in node_color]
     
     # Trazar los nodos
     node_trace = go.Scatter(
@@ -103,10 +127,11 @@ def update_graph(n_clicks):
         marker=dict(
             showscale=True,
             colorscale='YlGnBu',
+            color=node_color,
             size=10,
             colorbar=dict(
                 thickness=15,
-                title='Node Connections',
+                title='Region',
                 xanchor='left',
                 titleside='right'
             ),
