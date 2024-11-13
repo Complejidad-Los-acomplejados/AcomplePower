@@ -43,6 +43,9 @@ font = pygame.font.SysFont("Helvetica", 40)  # Aumentar el tamaño de la fuente
 small_font = pygame.font.SysFont("Helvetica", 30)
 footer_font = pygame.font.SysFont("Helvetica", 34)  # Fuente más grande para el footer
 
+# Cargar sonidos
+hover_sound = pygame.mixer.Sound("img/tocksound.mp3")  # Cambia por la ruta de tu archivo de sonido
+
 # Función para mostrar texto en pantalla
 def draw_text(text, font, color, surface, x, y):
     text_obj = font.render(text, True, color)
@@ -116,6 +119,11 @@ pre_home_animation(screen, screen_width, screen_height)
 
 # Bucle principal
 running = True
+hovered_start = False
+hovered_exit = False
+hovered_resume = False
+hovered_quit = False
+
 while running:
     screen.fill(BLACK)
     screen.blit(background_image, (0, 0))
@@ -150,21 +158,27 @@ while running:
             # Botón Start
             start_button_rect.x = logo_x + logo_size // 2
             start_button_rect.y = logo_y + logo_size // 2 - 95  # Ajusta esta línea para cambiar la altura del botón Start
-            pygame.draw.rect(screen, BUTTON_BACKGROUND_COLOR, start_button_rect, border_radius=10)
             if start_button_rect.collidepoint((mx, my)):
                 pygame.draw.rect(screen, HOVER_COLOR, animate_button(start_button_rect), border_radius=5)
+                if not hovered_start:
+                    hover_sound.play()
+                    hovered_start = True
             else:
                 pygame.draw.rect(screen, BUTTON_BACKGROUND_COLOR, start_button_rect, border_radius=5)
+                hovered_start = False
             draw_text("Start", font, FONT_COLOR, screen, start_button_rect.centerx + 100, start_button_rect.centery)
 
             # Botón Exit
             exit_button_rect.x = logo_x + logo_size // 2
             exit_button_rect.y = logo_y + logo_size // 2 + 15  # Ajusta esta línea para cambiar la altura del botón Exit
-            pygame.draw.rect(screen, BUTTON_BACKGROUND_COLOR, exit_button_rect, border_radius=10)
             if exit_button_rect.collidepoint((mx, my)):
                 pygame.draw.rect(screen, HOVER_COLOR, animate_button(exit_button_rect), border_radius=5)
+                if not hovered_exit:
+                    hover_sound.play()
+                    hovered_exit = True
             else:
                 pygame.draw.rect(screen, BUTTON_BACKGROUND_COLOR, exit_button_rect, border_radius=5)
+                hovered_exit = False
             draw_text("Exit", font, FONT_COLOR, screen, exit_button_rect.centerx + 100, exit_button_rect.centery)
 
         screen.blit(logo_image_scaled, (logo_x, logo_y))
@@ -186,15 +200,23 @@ while running:
         # Botón Resume
         if resume_button_rect.collidepoint((mx, my)):
             pygame.draw.rect(screen, HOVER_COLOR, animate_button(resume_button_rect), border_radius=5)
+            if not hovered_resume:
+                hover_sound.play()
+                hovered_resume = True
         else:
             pygame.draw.rect(screen, RESUME_BUTTON_COLOR, resume_button_rect, border_radius=5)
+            hovered_resume = False
         draw_text("Regresar", font, FONT_COLOR, screen, resume_button_rect.centerx, resume_button_rect.centery)
 
         # Botón Quit
         if quit_button_rect.collidepoint((mx, my)):
             pygame.draw.rect(screen, HOVER_COLOR, animate_button(quit_button_rect), border_radius=5)
+            if not hovered_quit:
+                hover_sound.play()
+                hovered_quit = True
         else:
             pygame.draw.rect(screen, QUIT_BUTTON_COLOR, quit_button_rect, border_radius=5)
+            hovered_quit = False
         draw_text("Salir", font, FONT_COLOR, screen, quit_button_rect.centerx, quit_button_rect.centery)
 
     # Eventos y control de salida
