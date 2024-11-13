@@ -9,7 +9,7 @@ HEADER_COLOR = (30, 30, 30, 137)  # Color #1E1E1E con 54% de transparencia
 WHITE = (255, 255, 255)
 
 # Fuente para el header
-header_font = pygame.font.SysFont("Helvetica", 24)
+header_font = pygame.font.SysFont("Helvetica", 34)
 
 # Cargar la imagen del logo y escalarla a un cuarto menos
 logo_image = pygame.image.load("img/logoupcc.png")  # Asegúrate de que esta ruta sea correcta
