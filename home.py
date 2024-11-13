@@ -5,6 +5,9 @@ from header_complej import draw_header  # Importar la función draw_header
 # Inicializar Pygame
 pygame.init()
 
+# Inicializar el mezclador de sonido
+pygame.mixer.init()
+
 # Configuración de pantalla completa
 screen_info = pygame.display.Info()
 screen_width, screen_height = screen_info.current_w, screen_info.current_h
@@ -17,7 +20,7 @@ BLACK = (0, 0, 0)
 BUTTON_COLOR = (0, 0, 139)  # Azul oscuro
 HOVER_COLOR = (0, 191, 255)  # Azul eléctrico brillante
 FONT_COLOR = (255, 255, 255)
-BUTTON_BACKGROUND_COLOR = (30, 30, 30, 137)  # Color #1E1E1E con 54% de transparencia
+BUTTON_BACKGROUND_COLOR = (30, 30, 30, 100)  # Color #1E1E1E con 54% de transparencia
 PAUSE_OVERLAY_COLOR = (0, 0, 0, 150)  # Color para oscurecer el fondo
 
 # Colores para los botones del menú de pausa
@@ -65,6 +68,23 @@ def draw_footer(surface, screen_width, screen_height):
 def animate_button(button_rect):
     return pygame.Rect(button_rect.x - 5, button_rect.y - 5, button_rect.width + 10, button_rect.height + 10)
 
+# Función para la animación de pre-home
+def pre_home_animation(screen, screen_width, screen_height):
+    font = pygame.font.SysFont("Helvetica", 80)
+    alpha = 255
+    clock = pygame.time.Clock()
+    start_time = pygame.time.get_ticks()
+
+    while pygame.time.get_ticks() - start_time < 3000:  # 3 segundos
+        screen.fill(BLACK)
+        draw_text("Welcome", font, WHITE, screen, screen_width // 2, screen_height // 2)
+        overlay = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, alpha))
+        screen.blit(overlay, (0, 0))
+        alpha = max(100, alpha - 5)  # Reducir la transparencia, pero no desaparecer completamente
+        pygame.display.flip()
+        clock.tick(60)
+
 # Variables de los botones
 button_width, button_height = 400, 80  # Aumentar el tamaño de los botones al doble
 button_padding = 50
@@ -86,6 +106,13 @@ logo_x = screen_width // 2 - 200
 logo_y = screen_height // 2 - 200
 logo_target_x = logo_x
 paused = False
+
+# Cargar y reproducir música
+pygame.mixer.music.load("img/Mazurka No. 11 in E Minor, Op. 17 No. 2.mp3")  # Cambia por la ruta de tu archivo de música
+pygame.mixer.music.play(-1)  # Reproducir en bucle
+
+# Ejecutar la animación de pre-home
+pre_home_animation(screen, screen_width, screen_height)
 
 # Bucle principal
 running = True
