@@ -102,71 +102,111 @@ def find_shortest_path():
             messagebox.showerror("Error", "Una o ambas estaciones no existen en el grafo.")
             return
 
-        # Calcular el camino más corto pasando por estaciones intermedias
-        try:
-            path = [start_station]
-            remaining_stations = set(G.nodes) - {start_station, end_station}
-            for _ in range(num_intermediate_stations):
-                next_station = min(remaining_stations, key=lambda station: nx.dijkstra_path_length(G, source=path[-1], target=station, weight='weight'))
-                path.append(next_station)
-                remaining_stations.remove(next_station)
-            path.append(end_station)
+        # Calcular el camino más corto entre inicio y fin
+        base_path = nx.dijkstra_path(G, source=start_station, target=end_station, weight='weight')
+        base_distance = nx.dijkstra_path_length(G, source=start_station, target=end_station, weight='weight')
 
-            # Obtener la ruta real usando la API de direcciones de Google Maps
-            directions_result = gmaps.directions(
-                (G.nodes[start_station]['pos'][0], G.nodes[start_station]['pos'][1]),
-                (G.nodes[end_station]['pos'][0], G.nodes[end_station]['pos'][1]),
-                waypoints=[(G.nodes[node]['pos'][0], G.nodes[node]['pos'][1]) for node in path[1:-1]],
-                mode="driving"
+        # Si no se requieren estaciones intermedias, usamos directamente el camino más corto
+        if num_intermediate_stations == 0:
+            path = base_path
+        else:
+            # Dividir el trayecto base en segmentos proporcionales al número de paradas
+            segment_length = base_distance / (num_intermediate_stations + 1)
+
+            # Lista para las estaciones intermedias
+            intermediate_stations = []
+
+            accumulated_distance = 0
+            for i in range(len(base_path) - 1):
+                current_node = base_path[i]
+                next_node = base_path[i + 1]
+                edge_distance = nx.dijkstra_path_length(G, source=current_node, target=next_node, weight='weight')
+
+                while len(intermediate_stations) < num_intermediate_stations and accumulated_distance + edge_distance >= len(intermediate_stations) * segment_length:
+                    target_distance = len(intermediate_stations) * segment_length
+                    overshoot_distance = target_distance - accumulated_distance
+                    # Buscar un nodo cercano a la posición ideal dentro del segmento
+                    intermediate_node = min(
+                        G.nodes,
+                        key=lambda node: abs(
+                            nx.dijkstra_path_length(G, source=current_node, target=node, weight='weight') - overshoot_distance
+                        )
+                    )
+                    intermediate_stations.append(intermediate_node)
+
+                accumulated_distance += edge_distance
+
+            # Crear el camino final con estaciones intermedias
+            path = [start_station] + intermediate_stations + [end_station]
+
+        # Calcular la distancia total del nuevo camino
+        total_distance = sum(
+            nx.dijkstra_path_length(G, source=path[i], target=path[i + 1], weight='weight')
+            for i in range(len(path) - 1)
+        )
+
+        # Validar que la nueva distancia no sea excesiva
+        if total_distance > base_distance * 1.1:
+            messagebox.showwarning(
+                "Advertencia",
+                f"El camino con escalas es significativamente más largo ({total_distance:.2f} km vs {base_distance:.2f} km)."
             )
 
-            # Extraer los puntos de la ruta
-            route_points = []
-            for leg in directions_result[0]['legs']:
-                for step in leg['steps']:
-                    points = polyline.decode(step['polyline']['points'])
-                    route_points.extend(points)
+        # Obtener la ruta real usando Google Maps API
+        directions_result = gmaps.directions(
+            (G.nodes[start_station]['pos'][0], G.nodes[start_station]['pos'][1]),
+            (G.nodes[end_station]['pos'][0], G.nodes[end_station]['pos'][1]),
+            waypoints=[(G.nodes[node]['pos'][0], G.nodes[node]['pos'][1]) for node in path[1:-1]],
+            mode="driving"
+        )
 
-            # Crear un mapa centrado en el promedio de las coordenadas
-            avg_lat = sum([G.nodes[node]['pos'][0] for node in G.nodes]) / len(G.nodes)
-            avg_lon = sum([G.nodes[node]['pos'][1] for node in G.nodes]) / len(G.nodes)
-            m = folium.Map(location=[avg_lat, avg_lon], zoom_start=6)
+        # Extraer los puntos de la ruta
+        route_points = []
+        for leg in directions_result[0]['legs']:
+            for step in leg['steps']:
+                points = polyline.decode(step['polyline']['points'])
+                route_points.extend(points)
 
-            # Crear un clúster de marcadores
-            marker_cluster = MarkerCluster().add_to(m)
+        # Crear un mapa centrado en el promedio de las coordenadas
+        avg_lat = sum([G.nodes[node]['pos'][0] for node in G.nodes]) / len(G.nodes)
+        avg_lon = sum([G.nodes[node]['pos'][1] for node in G.nodes]) / len(G.nodes)
+        m = folium.Map(location=[avg_lat, avg_lon], zoom_start=6)
 
-            # Agregar marcadores al mapa
-            for node in G.nodes:
-                folium.Marker(
-                    location=[G.nodes[node]['pos'][0], G.nodes[node]['pos'][1]],
-                    popup=node,
-                ).add_to(marker_cluster)
+        # Crear un clúster de marcadores
+        marker_cluster = MarkerCluster().add_to(m)
 
-            # Resaltar las estaciones de inicio y fin
+        # Agregar marcadores al mapa
+        for node in G.nodes:
             folium.Marker(
-                location=[G.nodes[start_station]['pos'][0], G.nodes[start_station]['pos'][1]],
-                popup=start_station,
-                icon=folium.Icon(color='green')
-            ).add_to(m)
-            folium.Marker(
-                location=[G.nodes[end_station]['pos'][0], G.nodes[end_station]['pos'][1]],
-                popup=end_station,
-                icon=folium.Icon(color='red')
-            ).add_to(m)
+                location=[G.nodes[node]['pos'][0], G.nodes[node]['pos'][1]],
+                popup=node,
+            ).add_to(marker_cluster)
 
-            # Dibujar el camino más corto
-            folium.PolyLine(route_points, color="blue", weight=5, opacity=0.7).add_to(m)
+        # Resaltar las estaciones de inicio y fin
+        folium.Marker(
+            location=[G.nodes[start_station]['pos'][0], G.nodes[start_station]['pos'][1]],
+            popup=start_station,
+            icon=folium.Icon(color='green')
+        ).add_to(m)
+        folium.Marker(
+            location=[G.nodes[end_station]['pos'][0], G.nodes[end_station]['pos'][1]],
+            popup=end_station,
+            icon=folium.Icon(color='red')
+        ).add_to(m)
 
-            # Guardar el mapa en un archivo HTML y abrirlo en el navegador
-            m.save('shortest_path_map.html')
-            webbrowser.open('shortest_path_map.html')
+        # Dibujar el camino más corto
+        folium.PolyLine(route_points, color="blue", weight=5, opacity=0.7).add_to(m)
 
-        except nx.NetworkXNoPath:
-            messagebox.showerror("Error", "No hay un camino entre las estaciones seleccionadas.")
-            return
+        # Guardar el mapa en un archivo HTML y abrirlo en el navegador
+        m.save('shortest_path_map.html')
+        webbrowser.open('shortest_path_map.html')
+
     except Exception as e:
         messagebox.showerror("Error", f"Error al encontrar el camino más corto: {e}")
         print(f"Error al encontrar el camino más corto: {e}")
+
+
+
         
 # Crear la ventana principal
 root = tk.Tk()
