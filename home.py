@@ -1,5 +1,6 @@
 import pygame
 import sys
+import subprocess
 from header_complej import draw_header  # Importar la función draw_header
 
 # Inicializar Pygame
@@ -61,7 +62,7 @@ def draw_footer(surface, screen_width, screen_height):
     # Texto en el footer
     draw_text("Welcome to AcomplePower (1.0)", footer_font, FONT_COLOR, footer_surface, screen_width // 2, footer_height // 2 - 20)
     draw_text("Astuyauri Calderon, Jherson David", footer_font, FONT_COLOR, footer_surface, screen_width // 4.5, footer_height // 2 + 10)
-    draw_text("Quispe Sivana Torres, Claudio Sandro", footer_font, FONT_COLOR, footer_surface, screen_width // 2, footer_height // 2 + 10)
+    draw_text("Quispesivana Torres, Claudio Sandro", footer_font, FONT_COLOR, footer_surface, screen_width // 2, footer_height // 2 + 10)
     draw_text("Talizo Balbín, Joan Jefferson", footer_font, FONT_COLOR, footer_surface, 3 * screen_width // 4, footer_height // 2 + 10)
     
     # Dibujar el footer en la pantalla principal
@@ -232,7 +233,9 @@ while running:
                 elif logo_clicked:
                     if start_button_rect.collidepoint((mx, my)):
                         print("Start button pressed")
-                        # Lógica para iniciar el juego
+                        subprocess.Popen([sys.executable, "AcomplePower.py"])
+                        pygame.quit()
+                        sys.exit()
                     elif exit_button_rect.collidepoint((mx, my)):
                         pygame.quit()
                         sys.exit()
