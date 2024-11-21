@@ -189,25 +189,60 @@ def find_shortest_path():
 def setup_tkinter(root):
     global start_station_var, end_station_var, num_intermediate_stations_var, start_station_menu, end_station_menu, distance_label
 
-    load_button = tk.Button(root, text="Cargar Base de Datos", command=load_data)
-    load_button.pack(pady=20)
+    # Configuración de la ventana de Tkinter
+    root.title("AcomplePower - Camino Más Corto")
+    window_width, window_height = 900, 600
+    root.geometry(f"{window_width}x{window_height}")
+
+    # Crear un canvas para el fondo
+    canvas = tk.Canvas(root, width=window_width, height=window_height)
+    canvas.pack(fill="both", expand=True)
+
+    # Crear un degradado de azul a negro
+    def draw_gradient(canvas, width, height):
+        for i in range(height):
+            color = f'#{int(0):02x}{int(0):02x}{int(255 * (1 - i / height)):02x}'
+            canvas.create_line(0, i, width, i, fill=color)
+
+    draw_gradient(canvas, window_width, window_height)
+
+    # Configurar estilo de fuente
+    font_style = ("Helvetica", 14)
+    title_font = ("Helvetica", 20, "bold")
+
+    # Crear y posicionar elementos de la interfaz
+    title_label = Label(root, text="AcomplePower", font=title_font, fg="white", bg="black")
+    canvas.create_window(window_width // 2, 40, window=title_label)
+
+    load_button = tk.Button(root, text="Cargar Base de Datos", font=font_style, bg="gray", fg="white", command=load_data)
+    canvas.create_window(window_width // 2, 100, window=load_button)
 
     start_station_var = StringVar(root)
     end_station_var = StringVar(root)
     num_intermediate_stations_var = StringVar(root)
 
     start_station_menu = OptionMenu(root, start_station_var, "")
-    start_station_menu.pack(pady=10)
+    start_station_menu.config(font=font_style, bg="gray", fg="white")
+    canvas.create_window(window_width // 2, 160, window=start_station_menu)
+
     end_station_menu = OptionMenu(root, end_station_var, "")
-    end_station_menu.pack(pady=10)
+    end_station_menu.config(font=font_style, bg="gray", fg="white")
+    canvas.create_window(window_width // 2, 220, window=end_station_menu)
 
-    num_intermediate_stations_label = tk.Label(root, text="Número de Estaciones Intermedias:")
-    num_intermediate_stations_label.pack(pady=10)
-    num_intermediate_stations_entry = Entry(root, textvariable=num_intermediate_stations_var)
-    num_intermediate_stations_entry.pack(pady=10)
+    num_intermediate_stations_label = tk.Label(root, text="Número de Estaciones Intermedias:", font=font_style, fg="white", bg="black")
+    canvas.create_window(window_width // 2, 280, window=num_intermediate_stations_label)
 
-    find_path_button = tk.Button(root, text="Encontrar Camino Más Corto", command=find_shortest_path)
-    find_path_button.pack(pady=20)
+    num_intermediate_stations_entry = Entry(root, textvariable=num_intermediate_stations_var, font=font_style)
+    canvas.create_window(window_width // 2, 340, window=num_intermediate_stations_entry)
 
-    distance_label = Label(root, text="Distancia total: 0 km")
-    distance_label.pack(pady=10)
+    find_path_button = tk.Button(root, text="Encontrar Camino Más Corto", font=font_style, bg="gray", fg="white", command=find_shortest_path)
+    canvas.create_window(window_width // 2, 400, window=find_path_button)
+
+    distance_label = Label(root, text="Distancia total: 0 km", font=font_style, fg="white", bg="black")
+    canvas.create_window(window_width // 2, 460, window=distance_label)
+
+    # Mantener la ventana centrada y consistente
+    root.update_idletasks()
+    x = (root.winfo_screenwidth() // 2) - (window_width // 2)
+    y = (root.winfo_screenheight() // 2) - (window_height // 2)
+    root.geometry(f"{window_width}x{window_height}+{x}+{y}")
