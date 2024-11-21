@@ -5,8 +5,8 @@ from config.config import *
 from assets.assets import load_assets
 from animations.animations import pre_home_animation, animate_button
 from ui.ui import draw_header, draw_footer, draw_text
-from acomplexpower import setup_pygame_ui, load_data
-import pygame_gui
+from acomplexpower import setup_tkinter
+import tkinter as tk
 
 # Inicializar Pygame
 pygame.init()
@@ -38,12 +38,9 @@ logo_y = screen_height // 2 - 200
 logo_target_x = logo_x
 paused = False
 
-# Variables de la interfaz de usuario
-ui_active = False
-ui_elements = []
-
-# Inicializar pygame_gui
-manager = pygame_gui.UIManager((screen_width, screen_height))
+# Crear la ventana de Tkinter
+root = tk.Tk()
+root.withdraw()  # Ocultar la ventana de Tkinter hasta que se necesite
 
 # Bucle principal
 running = True
@@ -52,7 +49,6 @@ hovered_exit = False
 hovered_resume = False
 
 while running:
-    time_delta = pygame.time.Clock().tick(60) / 1000.0
     screen.fill(BLACK)
     screen.blit(assets['background_image'], (0, 0))
 
@@ -60,57 +56,56 @@ while running:
     draw_header(screen, screen_width)
 
     if not paused:
-        if not ui_active:
-            # Animación de pulsación para el logo
-            if not logo_clicked:
-                logo_size = 400 + logo_pulse
-                logo_pulse += pulse_direction
-                if logo_pulse > 20 or logo_pulse < -20:
-                    pulse_direction *= -1
+        # Animación de pulsación para el logo
+        if not logo_clicked:
+            logo_size = 400 + logo_pulse
+            logo_pulse += pulse_direction
+            if logo_pulse > 20 or logo_pulse < -20:
+                pulse_direction *= -1
+        else:
+            logo_size = 400
+
+        logo_image_scaled = pygame.transform.scale(assets['logo_surface'], (logo_size, logo_size))
+
+        if logo_clicked:
+            logo_target_x = screen_width // 2 - 350  # Mover el logo a la izquierda
+        else:
+            logo_target_x = screen_width // 2 - logo_size // 2
+
+        # Deslizar el logo hacia la izquierda
+        logo_x += (logo_target_x - logo_x) * 0.1
+
+        # Dibuja los botones solo si el logo ha sido clicado
+        if logo_clicked:
+            mx, my = pygame.mouse.get_pos()
+
+            # Botón Start
+            start_button_rect.x = logo_x + logo_size // 2
+            start_button_rect.y = logo_y + logo_size // 2 - 95  # Ajusta esta línea para cambiar la altura del botón Start
+            if start_button_rect.collidepoint((mx, my)):
+                pygame.draw.rect(screen, HOVER_COLOR, animate_button(start_button_rect), border_radius=5)
+                if not hovered_start:
+                    assets['hover_sound'].play()
+                    hovered_start = True
             else:
-                logo_size = 400
+                pygame.draw.rect(screen, BUTTON_BACKGROUND_COLOR, start_button_rect, border_radius=5)
+                hovered_start = False
+            draw_text("Start", font, FONT_COLOR, screen, start_button_rect.centerx + 100, start_button_rect.centery)
 
-            logo_image_scaled = pygame.transform.scale(assets['logo_surface'], (logo_size, logo_size))
-
-            if logo_clicked:
-                logo_target_x = screen_width // 2 - 350  # Mover el logo a la izquierda
+            # Botón Exit
+            exit_button_rect.x = logo_x + logo_size // 2
+            exit_button_rect.y = logo_y + logo_size // 2 + 15  # Ajusta esta línea para cambiar la altura del botón Exit
+            if exit_button_rect.collidepoint((mx, my)):
+                pygame.draw.rect(screen, HOVER_COLOR, animate_button(exit_button_rect), border_radius=5)
+                if not hovered_exit:
+                    assets['hover_sound'].play()
+                    hovered_exit = True
             else:
-                logo_target_x = screen_width // 2 - logo_size // 2
+                pygame.draw.rect(screen, BUTTON_BACKGROUND_COLOR, exit_button_rect, border_radius=5)
+                hovered_exit = False
+            draw_text("Exit", font, FONT_COLOR, screen, exit_button_rect.centerx + 100, exit_button_rect.centery)
 
-            # Deslizar el logo hacia la izquierda
-            logo_x += (logo_target_x - logo_x) * 0.1
-
-            # Dibuja los botones solo si el logo ha sido clicado
-            if logo_clicked:
-                mx, my = pygame.mouse.get_pos()
-
-                # Botón Start
-                start_button_rect.x = logo_x + logo_size // 2
-                start_button_rect.y = logo_y + logo_size // 2 - 95  # Ajusta esta línea para cambiar la altura del botón Start
-                if start_button_rect.collidepoint((mx, my)):
-                    pygame.draw.rect(screen, HOVER_COLOR, animate_button(start_button_rect), border_radius=5)
-                    if not hovered_start:
-                        assets['hover_sound'].play()
-                        hovered_start = True
-                else:
-                    pygame.draw.rect(screen, BUTTON_BACKGROUND_COLOR, start_button_rect, border_radius=5)
-                    hovered_start = False
-                draw_text("Start", font, FONT_COLOR, screen, start_button_rect.centerx + 100, start_button_rect.centery)
-
-                # Botón Exit
-                exit_button_rect.x = logo_x + logo_size // 2
-                exit_button_rect.y = logo_y + logo_size // 2 + 15  # Ajusta esta línea para cambiar la altura del botón Exit
-                if exit_button_rect.collidepoint((mx, my)):
-                    pygame.draw.rect(screen, HOVER_COLOR, animate_button(exit_button_rect), border_radius=5)
-                    if not hovered_exit:
-                        assets['hover_sound'].play()
-                        hovered_exit = True
-                else:
-                    pygame.draw.rect(screen, BUTTON_BACKGROUND_COLOR, exit_button_rect, border_radius=5)
-                    hovered_exit = False
-                draw_text("Exit", font, FONT_COLOR, screen, exit_button_rect.centerx + 100, exit_button_rect.centery)
-
-            screen.blit(logo_image_scaled, (logo_x, logo_y))
+        screen.blit(logo_image_scaled, (logo_x, logo_y))
 
         # Dibujar el footer
         draw_footer(screen, screen_width, screen_height)
@@ -161,9 +156,9 @@ while running:
                 elif logo_clicked:
                     if start_button_rect.collidepoint((mx, my)):
                         print("Start button pressed")
-                        ui_active = True
-                        load_data(manager)  # Cargar la base de datos al presionar Start
-                        setup_pygame_ui(manager)
+                        root.deiconify()  # Mostrar la ventana de Tkinter
+                        setup_tkinter(root)
+                        root.update()  # Actualizar la ventana de Tkinter
                     elif exit_button_rect.collidepoint((mx, my)):
                         pygame.quit()
                         sys.exit()
@@ -177,12 +172,6 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 paused = not paused
 
-        if ui_active:
-            manager.process_events(event)
-
-    if ui_active:
-        manager.update(time_delta)
-        manager.draw_ui(screen)
-
     pygame.display.flip()
     pygame.time.Clock().tick(60)
+    root.update()  # Mantener la ventana de Tkinter actualizada
