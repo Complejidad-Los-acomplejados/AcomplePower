@@ -185,7 +185,6 @@ def find_shortest_path():
     except Exception as e:
         messagebox.showerror("Error", f"Error al encontrar el camino más corto: {e}")
         print(f"Error al encontrar el camino más corto: {e}")
-
 def setup_tkinter(root):
     global start_station_var, end_station_var, num_intermediate_stations_var, start_station_menu, end_station_menu, distance_label
 
@@ -243,6 +242,7 @@ def setup_tkinter(root):
 
     # Mantener la ventana centrada y consistente
     root.update_idletasks()
-    x = (root.winfo_screenwidth() // 2) - (window_width // 2)
-    y = (root.winfo_screenheight() // 2) - (window_height // 2)
+    x = (root.winfo_screenwidth() // 2) - (window_width // 2) - 10  # Mover 50 píxeles a la izquierda
+    y = (root.winfo_screenheight() // 2) - (window_height // 2) - 30 # Mover 50 píxeles hacia arriba
     root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
