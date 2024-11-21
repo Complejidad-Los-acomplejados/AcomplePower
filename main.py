@@ -1,5 +1,6 @@
 import pygame
 import sys
+import os
 import subprocess
 from config.config import *
 from assets.assets import load_assets
@@ -17,24 +18,24 @@ font = pygame.font.SysFont("Helvetica", 40)  # Aumentar el tamaño de la fuente
 small_font = pygame.font.SysFont("Helvetica", 30)
 footer_font = pygame.font.SysFont("Helvetica", 34)  # Fuente más grande para el footer
 
-# Configuración de pantalla completa
-screen_info = pygame.display.Info()
-screen_width, screen_height = screen_info.current_w, screen_info.current_h
-screen = pygame.display.set_mode((screen_width, screen_height), pygame.FULLSCREEN)
+# Configuración de pantalla más pequeña y centrada
+window_width, window_height = 900, 600
+os.environ['SDL_VIDEO_CENTERED'] = '1'
+screen = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption("AcomplePower")
 
 # Cargar recursos
-assets = load_assets(screen_width, screen_height)
+assets = load_assets(window_width, window_height)
 
 # Ejecutar la animación de pre-home
-pre_home_animation(screen, screen_width, screen_height)
+pre_home_animation(screen, window_width, window_height)
 
 # Variables de animación y estado
 logo_pulse = 1
 pulse_direction = 1
 logo_clicked = False
-logo_x = screen_width // 2 - 200
-logo_y = screen_height // 2 - 200
+logo_x = window_width // 2 - 200
+logo_y = window_height // 2 - 200
 logo_target_x = logo_x
 paused = False
 
@@ -53,7 +54,7 @@ while running:
     screen.blit(assets['background_image'], (0, 0))
 
     # Dibujar el header
-    draw_header(screen, screen_width)
+    draw_header(screen, window_width)
 
     if not paused:
         # Animación de pulsación para el logo
@@ -68,9 +69,9 @@ while running:
         logo_image_scaled = pygame.transform.scale(assets['logo_surface'], (logo_size, logo_size))
 
         if logo_clicked:
-            logo_target_x = screen_width // 2 - 350  # Mover el logo a la izquierda
+            logo_target_x = window_width // 2 - 350  # Mover el logo a la izquierda
         else:
-            logo_target_x = screen_width // 2 - logo_size // 2
+            logo_target_x = window_width // 2 - logo_size // 2
 
         # Deslizar el logo hacia la izquierda
         logo_x += (logo_target_x - logo_x) * 0.1
@@ -108,10 +109,10 @@ while running:
         screen.blit(logo_image_scaled, (logo_x, logo_y))
 
         # Dibujar el footer
-        draw_footer(screen, screen_width, screen_height)
+        draw_footer(screen, window_width, window_height)
     else:
         # Oscurecer el fondo
-        overlay = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
+        overlay = pygame.Surface((window_width, window_height), pygame.SRCALPHA)
         overlay.fill(PAUSE_OVERLAY_COLOR)
         screen.blit(overlay, (0, 0))
 

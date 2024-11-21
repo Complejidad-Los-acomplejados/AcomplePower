@@ -6,9 +6,9 @@ HEADER_HEIGHT = 80  # Altura del header
 HEADER_COLOR = (30, 30, 30, 137)  # Color #1E1E1E con 54% de transparencia
 WHITE = (255, 255, 255)
 
-# Cargar la imagen del logo y escalarla a un cuarto menos
+# Cargar la imagen del logo y escalarla a un tamaño más pequeño
 logo_image = pygame.image.load("img/logoupcc.png")  # Asegúrate de que esta ruta sea correcta
-logo_image = pygame.transform.scale(logo_image, (logo_image.get_width() // 2.5, logo_image.get_height() // 2.5))
+logo_image = pygame.transform.scale(logo_image, (logo_image.get_width() // 3, logo_image.get_height() // 3))
 
 def draw_header(surface, screen_width):
     # Inicializar la fuente para el header
