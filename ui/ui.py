@@ -8,7 +8,7 @@ WHITE = (255, 255, 255)
 
 # Cargar la imagen del logo y escalarla a un tamaño más pequeño
 logo_image = pygame.image.load("img/logoupcc.png")  # Asegúrate de que esta ruta sea correcta
-logo_image = pygame.transform.scale(logo_image, (logo_image.get_width() // 3, logo_image.get_height() // 3))
+logo_image = pygame.transform.scale(logo_image, (logo_image.get_width() // 4, logo_image.get_height() // 4))
 
 def draw_header(surface, screen_width):
     # Inicializar la fuente para el header
@@ -33,7 +33,8 @@ def draw_header(surface, screen_width):
 
 def draw_footer(surface, screen_width, screen_height):
     # Inicializar la fuente para el footer
-    footer_font = pygame.font.SysFont("Helvetica", 24)
+    footer_font = pygame.font.SysFont("Helvetica", 20)  # Disminuir el tamaño de la fuente
+    small_footer_font = pygame.font.SysFont("Helvetica", 16)  # Fuente más pequeña para los nombres
     
     footer_height = 80
     footer_surface = pygame.Surface((screen_width, footer_height), pygame.SRCALPHA)
@@ -41,9 +42,9 @@ def draw_footer(surface, screen_width, screen_height):
     
     # Texto en el footer
     draw_text("Welcome to AcomplePower (1.0)", footer_font, FONT_COLOR, footer_surface, screen_width // 2, footer_height // 2 - 20)
-    draw_text("Astuyauri Calderon, Jherson David", footer_font, FONT_COLOR, footer_surface, screen_width // 4.5, footer_height // 2 + 10)
-    draw_text("Quispesivana Torres, Claudio Sandro", footer_font, FONT_COLOR, footer_surface, screen_width // 2, footer_height // 2 + 10)
-    draw_text("Talizo Balbín, Joan Jefferson", footer_font, FONT_COLOR, footer_surface, 3 * screen_width // 4, footer_height // 2 + 10)
+    draw_text("Astuyauri Calderon, Jherson David", small_footer_font, FONT_COLOR, footer_surface, screen_width // 4.5, footer_height // 2 + 10)
+    draw_text("Quispesivana Torres, Claudio Sandro", small_footer_font, FONT_COLOR, footer_surface, screen_width // 2, footer_height // 2 + 10)
+    draw_text("Talizo Balbín, Joan Jefferson", small_footer_font, FONT_COLOR, footer_surface, 3 * screen_width // 4, footer_height // 2 + 10)
     
     # Dibujar el footer en la pantalla principal
     surface.blit(footer_surface, (0, screen_height - footer_height))

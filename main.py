@@ -27,6 +27,11 @@ pygame.display.set_caption("AcomplePower")
 # Cargar recursos
 assets = load_assets(window_width, window_height)
 
+# Cargar icono de audio
+audio_icon = pygame.image.load("img/audio_icon.png")
+audio_icon = pygame.transform.scale(audio_icon, (50, 50))
+audio_button_rect = audio_icon.get_rect(topleft=(window_width - 60, 10))
+
 # Ejecutar la animación de pre-home
 pre_home_animation(screen, window_width, window_height)
 
@@ -38,6 +43,7 @@ logo_x = window_width // 2 - 200
 logo_y = window_height // 2 - 200
 logo_target_x = logo_x
 paused = False
+music_muted = False
 
 # Crear la ventana de Tkinter
 root = tk.Tk()
@@ -55,6 +61,9 @@ while running:
 
     # Dibujar el header
     draw_header(screen, window_width)
+
+    # Dibujar el botón de audio
+    screen.blit(audio_icon, audio_button_rect.topleft)
 
     if not paused:
         # Animación de pulsación para el logo
@@ -151,7 +160,14 @@ while running:
             sys.exit()
         elif event.type == pygame.MOUSEBUTTONDOWN:
             mx, my = pygame.mouse.get_pos()
-            if not paused:
+            if audio_button_rect.collidepoint((mx, my)):
+                if music_muted:
+                    pygame.mixer.music.unpause()
+                    music_muted = False
+                else:
+                    pygame.mixer.music.pause()
+                    music_muted = True
+            elif not paused:
                 if not logo_clicked and logo_x < mx < logo_x + logo_size and logo_y < my < logo_y + logo_size:
                     logo_clicked = True
                 elif logo_clicked:
