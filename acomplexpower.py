@@ -1,7 +1,7 @@
 import pandas as pd
 import networkx as nx
 import tkinter as tk
-from tkinter import messagebox, StringVar, OptionMenu, Entry, Label
+from tkinter import messagebox, StringVar, ttk
 import folium
 from folium.plugins import MarkerCluster
 import webbrowser
@@ -10,6 +10,7 @@ import googlemaps
 import polyline
 import heapq as hq
 import math
+from PIL import Image, ImageTk
 
 gmaps = googlemaps.Client(key='AIzaSyA8nGVVg5uAs2RACNJ7m7CjPT9ycV9-1eg')
 
@@ -70,11 +71,8 @@ def process_data(df):
         stations = df['Station Name'].tolist()
         start_station_var.set(stations[0])
         end_station_var.set(stations[0])
-        start_station_menu['menu'].delete(0, 'end')
-        end_station_menu['menu'].delete(0, 'end')
-        for name in stations:
-            start_station_menu['menu'].add_command(label=name, command=tk._setit(start_station_var, name))
-            end_station_menu['menu'].add_command(label=name, command=tk._setit(end_station_var, name))
+        start_station_menu['values'] = stations
+        end_station_menu['values'] = stations
 
         show_map()
     except Exception as e:
@@ -222,63 +220,73 @@ def find_shortest_path():
 def setup_tkinter(root):
     global start_station_var, end_station_var, num_intermediate_stations_var, start_station_menu, end_station_menu, distance_label
 
-    # Configuración de la ventana de Tkinter
     root.title("AcomplePower - Camino Más Corto")
     window_width, window_height = 900, 600
     root.geometry(f"{window_width}x{window_height}")
 
-    # Crear un canvas para el fondo
-    canvas = tk.Canvas(root, width=window_width, height=window_height)
-    canvas.pack(fill="both", expand=True)
+    # Establecer el fondo de pantalla
+    background_image = Image.open("img/fondoaurora.jpg")
+    background_photo = ImageTk.PhotoImage(background_image.resize((window_width, window_height)))
+    background_label = tk.Label(root, image=background_photo)
+    background_label.place(relwidth=1, relheight=1)
 
-    # Crear un degradado de azul a negro
-    def draw_gradient(canvas, width, height):
-        for i in range(height):
-            color = f'#{int(0):02x}{int(0):02x}{int(255 * (1 - i / height)):02x}'
-            canvas.create_line(0, i, width, i, fill=color)
+    # Agregar el logo
+    logo_image = Image.open("img/logoupcc.png")
+    logo_photo = ImageTk.PhotoImage(logo_image.resize((50, 50)))
+    logo_label = tk.Label(root, image=logo_photo, bg="black")
+    logo_label.place(x=20, y=20)
 
-    draw_gradient(canvas, window_width, window_height)
+    # Contenedor principal para los widgets
+    main_frame = tk.Frame(root, bg="black", bd=5)
+    main_frame.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.8, relheight=0.6)
 
-    # Configurar estilo de fuente
-    font_style = ("Helvetica", 14)
-    title_font = ("Helvetica", 20, "bold")
+    # Título
+    title_label = tk.Label(main_frame, text="AcomplePower", font=("Helvetica", 20, "bold"), bg="black", fg="white")
+    title_label.pack(pady=10)
 
-    # Crear y posicionar elementos de la interfaz
-    title_label = Label(root, text="AcomplePower", font=title_font, fg="white", bg="black")
-    canvas.create_window(window_width // 2, 40, window=title_label)
+    # Botón para cargar estaciones
+    load_button = tk.Button(main_frame, text="Iniciar dataset", font=("Helvetica", 14), bg="gray", fg="white", command=load_data)
+    load_button.pack(pady=5)
 
-    load_button = tk.Button(root, text="Iniciar dataset", font=font_style, bg="gray", fg="white", command=load_data)
-    canvas.create_window(window_width // 2, 100, window=load_button)
+    start_station_var = tk.StringVar(root)
+    end_station_var = tk.StringVar(root)
+    num_intermediate_stations_var = tk.StringVar(root)
 
-    start_station_var = StringVar(root)
-    end_station_var = StringVar(root)
-    num_intermediate_stations_var = StringVar(root)
+    # Estación inicial
+    start_label = tk.Label(main_frame, text="Estación inicial", bg="black", fg="white")
+    start_label.pack(pady=5)
+    start_station_menu = ttk.Combobox(main_frame, textvariable=start_station_var, state="readonly")
+    start_station_menu.pack(pady=5)
 
-    start_station_menu = OptionMenu(root, start_station_var, "")
-    start_station_menu.config(font=font_style, bg="gray", fg="white")
-    canvas.create_window(window_width // 2, 160, window=start_station_menu)
+    # Estación final
+    end_label = tk.Label(main_frame, text="Estación final", bg="black", fg="white")
+    end_label.pack(pady=5)
+    end_station_menu = ttk.Combobox(main_frame, textvariable=end_station_var, state="readonly")
+    end_station_menu.pack(pady=5)
 
-    end_station_menu = OptionMenu(root, end_station_var, "")
-    end_station_menu.config(font=font_style, bg="gray", fg="white")
-    canvas.create_window(window_width // 2, 220, window=end_station_menu)
+    # Número de paradas
+    num_intermediate_stations_label = tk.Label(main_frame, text="Número de Estaciones Intermedias:", bg="black", fg="white")
+    num_intermediate_stations_label.pack(pady=5)
+    num_intermediate_stations_entry = tk.Entry(main_frame, textvariable=num_intermediate_stations_var, font=("Helvetica", 14))
+    num_intermediate_stations_entry.pack(pady=5)
 
-    num_intermediate_stations_label = tk.Label(root, text="Número de Estaciones Intermedias:", font=font_style, fg="white", bg="black")
-    canvas.create_window(window_width // 2, 280, window=num_intermediate_stations_label)
+    # Botón para calcular el camino
+    find_path_button = tk.Button(main_frame, text="Encontrar Camino Más Corto", font=("Helvetica", 14), bg="gray", fg="white", command=find_shortest_path)
+    find_path_button.pack(pady=10)
 
-    num_intermediate_stations_entry = Entry(root, textvariable=num_intermediate_stations_var, font=font_style)
-    canvas.create_window(window_width // 2, 340, window=num_intermediate_stations_entry)
-
-    find_path_button = tk.Button(root, text="Encontrar Camino Más Corto", font=font_style, bg="gray", fg="white", command=find_shortest_path)
-    canvas.create_window(window_width // 2, 400, window=find_path_button)
-
-    distance_label = Label(root, text="Distancia total: 0 km", font=font_style, fg="white", bg="black")
-    canvas.create_window(window_width // 2, 460, window=distance_label)
+    # Resultado
+    distance_label = tk.Label(main_frame, text="Distancia total: 0 km", bg="black", fg="white", font=("Helvetica", 14))
+    distance_label.pack(pady=10)
 
     # Mantener la ventana centrada y consistente
     root.update_idletasks()
-    x = (root.winfo_screenwidth() // 2) - (window_width // 2) - 10  # Mover 50 píxeles a la izquierda
-    y = (root.winfo_screenheight() // 2) - (window_height // 2) - 30 # Mover 50 píxeles hacia arriba
+    x = (root.winfo_screenwidth() // 2) - (window_width // 2)
+    y = (root.winfo_screenheight() // 2) - (window_height // 2)
     root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+    # Mantener referencias a las imágenes para evitar que se recojan por el recolector de basura
+    root.background_photo = background_photo
+    root.logo_photo = logo_photo
 
 # Inicializar la interfaz de Tkinter
 if __name__ == "__main__":
