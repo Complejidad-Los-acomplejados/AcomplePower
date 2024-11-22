@@ -230,63 +230,105 @@ def setup_tkinter(root):
     background_label = tk.Label(root, image=background_photo)
     background_label.place(relwidth=1, relheight=1)
 
-    # Agregar el logo
+    # Encabezado transparente
+    header = tk.Frame(root, bg="black", bd=0)
+    header.place(relwidth=1, relheight=0.1)
+    title_label = tk.Label(
+        header,
+        text="AcomplePower - Camino Más Corto",
+        font=("Helvetica", 24, "bold"),
+        bg="black",
+        fg="white",
+    )
+    title_label.pack(pady=10)
+
+    # Footer transparente
+    footer = tk.Frame(root, bg="black", bd=0)
+    footer.place(relwidth=1, relx=0, rely=0.9)
+    footer_label = tk.Label(
+        footer,
+        text="© 2024 AcomplePower",
+        font=("Helvetica", 12),
+        bg="black",
+        fg="white",
+    )
+    footer_label.pack(pady=10)
+
+    # Contenedor principal para los widgets
+    main_frame = tk.Frame(root, bg="black", bd=5)  # Fondo negro    
+    main_frame.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.8, relheight=0.7)
+
+    # Logo en la esquina superior izquierda
     logo_image = Image.open("img/logoupcc.png")
     logo_photo = ImageTk.PhotoImage(logo_image.resize((50, 50)))
     logo_label = tk.Label(root, image=logo_photo, bg="black")
     logo_label.place(x=20, y=20)
 
-    # Contenedor principal para los widgets
-    main_frame = tk.Frame(root, bg="black", bd=5)
-    main_frame.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.8, relheight=0.6)
-
-    # Título
-    title_label = tk.Label(main_frame, text="AcomplePower", font=("Helvetica", 20, "bold"), bg="black", fg="white")
-    title_label.pack(pady=10)
-
     # Botón para cargar estaciones
-    load_button = tk.Button(main_frame, text="Iniciar dataset", font=("Helvetica", 14), bg="gray", fg="white", command=load_data)
-    load_button.pack(pady=5)
+    load_button = tk.Button(
+        main_frame,
+        text="Iniciar Dataset",
+        font=("Helvetica", 14, "bold"),
+        bg="#4CAF50",
+        fg="white",
+        activebackground="#45a049",
+        command=load_data,
+    )
+    load_button.pack(pady=10)
 
+    # Variables de las estaciones
     start_station_var = tk.StringVar(root)
     end_station_var = tk.StringVar(root)
     num_intermediate_stations_var = tk.StringVar(root)
 
     # Estación inicial
-    start_label = tk.Label(main_frame, text="Estación inicial", bg="black", fg="white")
+    start_label = tk.Label(main_frame, text="Estación inicial:", font=("Helvetica", 14), bg="black", fg="white")
     start_label.pack(pady=5)
     start_station_menu = ttk.Combobox(main_frame, textvariable=start_station_var, state="readonly")
     start_station_menu.pack(pady=5)
 
     # Estación final
-    end_label = tk.Label(main_frame, text="Estación final", bg="black", fg="white")
+    end_label = tk.Label(main_frame, text="Estación final:", font=("Helvetica", 14), bg="black", fg="white")
     end_label.pack(pady=5)
     end_station_menu = ttk.Combobox(main_frame, textvariable=end_station_var, state="readonly")
     end_station_menu.pack(pady=5)
 
-    # Número de paradas
-    num_intermediate_stations_label = tk.Label(main_frame, text="Número de Estaciones Intermedias:", bg="black", fg="white")
+    # Número de estaciones intermedias
+    num_intermediate_stations_label = tk.Label(
+        main_frame, text="Número de Estaciones Intermedias:", font=("Helvetica", 14), bg="black", fg="white"
+    )
     num_intermediate_stations_label.pack(pady=5)
     num_intermediate_stations_entry = tk.Entry(main_frame, textvariable=num_intermediate_stations_var, font=("Helvetica", 14))
     num_intermediate_stations_entry.pack(pady=5)
 
-    # Botón para calcular el camino
-    find_path_button = tk.Button(main_frame, text="Encontrar Camino Más Corto", font=("Helvetica", 14), bg="gray", fg="white", command=find_shortest_path)
+    # Botón para calcular el camino más corto
+    find_path_button = tk.Button(
+        main_frame,
+        text="Encontrar Camino Más Corto",
+        font=("Helvetica", 14, "bold"),
+        bg="#2196F3",
+        fg="white",
+        activebackground="#1e88e5",
+        command=find_shortest_path,
+    )
     find_path_button.pack(pady=10)
 
     # Resultado
-    distance_label = tk.Label(main_frame, text="Distancia total: 0 km", bg="black", fg="white", font=("Helvetica", 14))
+    distance_label = tk.Label(
+        main_frame, text="Distancia total: 0 km", font=("Helvetica", 14), bg="black", fg="white"
+    )
     distance_label.pack(pady=10)
 
-    # Mantener la ventana centrada y consistente
+    # Centrar ventana en la pantalla
     root.update_idletasks()
     x = (root.winfo_screenwidth() // 2) - (window_width // 2)
     y = (root.winfo_screenheight() // 2) - (window_height // 2)
     root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
-    # Mantener referencias a las imágenes para evitar que se recojan por el recolector de basura
+    # Mantener referencias para evitar el recolector de basura
     root.background_photo = background_photo
     root.logo_photo = logo_photo
+
 
 # Inicializar la interfaz de Tkinter
 if __name__ == "__main__":
