@@ -1,7 +1,7 @@
 import pandas as pd
 import networkx as nx
 import tkinter as tk
-from tkinter import filedialog, messagebox, StringVar, OptionMenu, Entry, Label
+from tkinter import messagebox, StringVar, OptionMenu, Entry, Label
 import folium
 from folium.plugins import MarkerCluster
 import webbrowser
@@ -40,10 +40,7 @@ def dijkstra(G, source):
 
 def load_data():
     try:
-        file_path = filedialog.askopenfilename(title="Selecciona tu archivo de dataset", filetypes=[("Archivos CSV", "*.csv")])
-        if not file_path:
-            messagebox.showwarning("Advertencia", "No se seleccionó ningún archivo.")
-            return
+        file_path = 'dataset/estaciones_reducido.csv'
         df = pd.read_csv(file_path)
         print(f"Archivo cargado: {file_path}")
         print(df.head())  
@@ -200,9 +197,22 @@ def find_shortest_path():
 
         folium.PolyLine(route_points, color="blue", weight=5, opacity=0.7).add_to(m)
 
+        # Agregar un marcador con la distancia total
+        distance_popup = folium.Popup(f"Distancia total: {total_distance:.2f} km", max_width=300)
+        folium.Marker(
+            location=[avg_lat, avg_lon],
+            popup=distance_popup,
+            icon=folium.DivIcon(html=f"""
+                <div style="background-color: white; color: black; padding: 5px; border-radius: 5px;">
+                    Distancia total: {total_distance:.2f} km
+                </div>
+            """)
+        ).add_to(m)
+
         m.save('shortest_path_map.html')
         webbrowser.open('shortest_path_map.html')
 
+        # Actualizar la etiqueta de distancia
         distance_label.config(text=f"Distancia total: {total_distance:.2f} km")
 
     except Exception as e:
@@ -237,7 +247,7 @@ def setup_tkinter(root):
     title_label = Label(root, text="AcomplePower", font=title_font, fg="white", bg="black")
     canvas.create_window(window_width // 2, 40, window=title_label)
 
-    load_button = tk.Button(root, text="Cargar Base de Datos", font=font_style, bg="gray", fg="white", command=load_data)
+    load_button = tk.Button(root, text="Iniciar dataset", font=font_style, bg="gray", fg="white", command=load_data)
     canvas.create_window(window_width // 2, 100, window=load_button)
 
     start_station_var = StringVar(root)
@@ -270,3 +280,8 @@ def setup_tkinter(root):
     y = (root.winfo_screenheight() // 2) - (window_height // 2) - 30 # Mover 50 píxeles hacia arriba
     root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
+# Inicializar la interfaz de Tkinter
+if __name__ == "__main__":
+    root = tk.Tk()
+    setup_tkinter(root)
+    root.mainloop()
