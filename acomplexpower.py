@@ -13,7 +13,7 @@ import math
 from PIL import Image, ImageTk
 
 # Inicializa el cliente de Google Maps con una clave API válida
-gmaps = googlemaps.Client(key='TU_CLAVE_API')
+gmaps = googlemaps.Client(key='AIzaSyA8nGVVg5uAs2RACNJ7m7CjPT9ycV9-1eg')
 
 # Calcula la distancia en kilómetros entre dos coordenadas geográficas
 def calculate_distance(lat1, lon1, lat2, lon2):
