@@ -8,11 +8,35 @@ import webbrowser
 from geopy.distance import geodesic
 import googlemaps
 import polyline
+import heapq as hq
+import math
 
 gmaps = googlemaps.Client(key='AIzaSyA8nGVVg5uAs2RACNJ7m7CjPT9ycV9-1eg')
 
 def calculate_distance(lat1, lon1, lat2, lon2):
     return geodesic((lat1, lon1), (lat2, lon2)).km
+
+def dijkstra(G, source):
+    n = len(G.nodes)
+    visited = {node: False for node in G.nodes}
+    path = {node: None for node in G.nodes}
+    cost = {node: math.inf for node in G.nodes}
+
+    cost[source] = 0
+    pqueue = [(0, source)]
+    while pqueue:
+        g, u = hq.heappop(pqueue)
+        if not visited[u]:
+            visited[u] = True
+            for v in G.neighbors(u):
+                if not visited[v]:
+                    f = g + G[u][v]['weight']
+                    if f < cost[v]:
+                        cost[v] = f
+                        path[v] = u
+                        hq.heappush(pqueue, (f, v))
+
+    return path, cost
 
 def load_data():
     try:
@@ -84,46 +108,45 @@ def find_shortest_path():
     try:
         start_station = start_station_var.get()
         end_station = end_station_var.get()
-        num_intermediate_stations = int(num_intermediate_stations_var.get()) + 1
+        num_intermediate_stations = int(num_intermediate_stations_var.get())
 
         if start_station not in G.nodes or end_station not in G.nodes:
             messagebox.showerror("Error", "Una o ambas estaciones no existen en el grafo.")
             return
 
-        base_path = nx.dijkstra_path(G, source=start_station, target=end_station, weight='weight')
-        base_distance = nx.dijkstra_path_length(G, source=start_station, target=end_station, weight='weight')
+        path, cost = dijkstra(G, start_station)
+        base_path = []
+        current_node = end_station
+        while current_node is not None:
+            base_path.insert(0, current_node)
+            current_node = path[current_node]
+        base_distance = cost[end_station]
 
-        if num_intermediate_stations == 0:
-            path = base_path
-        else:
+        intermediate_stations = []
+        if num_intermediate_stations > 0:
             segment_length = base_distance / (num_intermediate_stations + 1)
-
-            intermediate_stations = []
-
             accumulated_distance = 0
             for i in range(len(base_path) - 1):
                 current_node = base_path[i]
                 next_node = base_path[i + 1]
-                edge_distance = nx.dijkstra_path_length(G, source=current_node, target=next_node, weight='weight')
+                edge_distance = cost[next_node] - cost[current_node]
 
-                while len(intermediate_stations) < num_intermediate_stations and accumulated_distance + edge_distance >= len(intermediate_stations) * segment_length:
-                    target_distance = len(intermediate_stations) * segment_length
+                while len(intermediate_stations) < num_intermediate_stations and accumulated_distance + edge_distance >= (len(intermediate_stations) + 1) * segment_length:
+                    target_distance = (len(intermediate_stations) + 1) * segment_length
                     overshoot_distance = target_distance - accumulated_distance
                     intermediate_node = min(
                         G.nodes,
-                        key=lambda node: abs(
-                            nx.dijkstra_path_length(G, source=current_node, target=node, weight='weight') - overshoot_distance
-                        )
+                        key=lambda node: abs(cost[node] - (cost[current_node] + overshoot_distance))
                     )
                     intermediate_stations.append(intermediate_node)
 
                 accumulated_distance += edge_distance
 
-            path = [start_station] + intermediate_stations + [end_station]
+        final_path = [start_station] + intermediate_stations + [end_station]
 
         total_distance = sum(
-            nx.dijkstra_path_length(G, source=path[i], target=path[i + 1], weight='weight')
-            for i in range(len(path) - 1)
+            cost[final_path[i + 1]] - cost[final_path[i]]
+            for i in range(len(final_path) - 1)
         )
 
         if total_distance > base_distance * 1.1:
@@ -135,7 +158,7 @@ def find_shortest_path():
         directions_result = gmaps.directions(
             (G.nodes[start_station]['pos'][0], G.nodes[start_station]['pos'][1]),
             (G.nodes[end_station]['pos'][0], G.nodes[end_station]['pos'][1]),
-            waypoints=[(G.nodes[node]['pos'][0], G.nodes[node]['pos'][1]) for node in path[1:-1]],
+            waypoints=[(G.nodes[node]['pos'][0], G.nodes[node]['pos'][1]) for node in final_path[1:-1]],
             mode="driving"
         )
 
@@ -185,6 +208,7 @@ def find_shortest_path():
     except Exception as e:
         messagebox.showerror("Error", f"Error al encontrar el camino más corto: {e}")
         print(f"Error al encontrar el camino más corto: {e}")
+
 def setup_tkinter(root):
     global start_station_var, end_station_var, num_intermediate_stations_var, start_station_menu, end_station_menu, distance_label
 
