@@ -12,11 +12,14 @@ import heapq as hq
 import math
 from PIL import Image, ImageTk
 
-gmaps = googlemaps.Client(key='AIzaSyA8nGVVg5uAs2RACNJ7m7CjPT9ycV9-1eg')
+# Inicializa el cliente de Google Maps con una clave API válida
+gmaps = googlemaps.Client(key='TU_CLAVE_API')
 
+# Calcula la distancia en kilómetros entre dos coordenadas geográficas
 def calculate_distance(lat1, lon1, lat2, lon2):
     return geodesic((lat1, lon1), (lat2, lon2)).km
 
+# Implementa el algoritmo de Dijkstra para encontrar las rutas más cortas en un grafo
 def dijkstra(G, source):
     n = len(G.nodes)
     visited = {node: False for node in G.nodes}
@@ -39,6 +42,7 @@ def dijkstra(G, source):
 
     return path, cost
 
+# Carga los datos desde un archivo CSV
 def load_data():
     try:
         file_path = 'dataset/estaciones_reducido.csv'
@@ -50,6 +54,7 @@ def load_data():
         messagebox.showerror("Error", f"Error al cargar el archivo: {e}")
         print(f"Error al cargar el archivo: {e}")
 
+# Procesa los datos del DataFrame y crea el grafo
 def process_data(df):
     global G, stations, start_station_var, end_station_var, start_station_menu, end_station_menu
     try:
@@ -79,6 +84,7 @@ def process_data(df):
         messagebox.showerror("Error", f"Error al procesar los datos: {e}")
         print(f"Error al procesar los datos: {e}")
 
+# Genera un mapa interactivo usando folium
 def show_map():
     try:
         avg_lat = sum([G.nodes[node]['pos'][0] for node in G.nodes]) / len(G.nodes)
@@ -99,6 +105,7 @@ def show_map():
         messagebox.showerror("Error", f"Error al mostrar el mapa: {e}")
         print(f"Error al mostrar el mapa: {e}")
 
+# Encuentra la ruta más corta utilizando Dijkstra y la API de Google Maps
 def find_shortest_path():
     try:
         start_station = start_station_var.get()
@@ -215,6 +222,7 @@ def find_shortest_path():
         messagebox.showerror("Error", f"Error al encontrar el camino más corto: {e}")
         print(f"Error al encontrar el camino más corto: {e}")
 
+# Configura la interfaz gráfica con Tkinter
 def setup_tkinter(root):
     global start_station_var, end_station_var, num_intermediate_stations_var, start_station_menu, end_station_menu, distance_label
 
@@ -312,7 +320,6 @@ def setup_tkinter(root):
 
     root.background_photo = background_photo
     root.logo_photo = logo_photo
-
 
 if __name__ == "__main__":
     root = tk.Tk()
