@@ -139,10 +139,10 @@ def find_shortest_path():
 
         final_path = [start_station] + intermediate_stations + [end_station]
 
-        total_distance = sum(
-            cost[final_path[i + 1]] - cost[final_path[i]]
-            for i in range(len(final_path) - 1)
-        )
+        total_distance = 0
+        for i in range(len(final_path) - 1):
+            segment_path, segment_cost = dijkstra(G, final_path[i])
+            total_distance += segment_cost[final_path[i + 1]]
 
         if total_distance > base_distance * 1.1:
             messagebox.showwarning(
@@ -195,7 +195,6 @@ def find_shortest_path():
 
         folium.PolyLine(route_points, color="blue", weight=5, opacity=0.7).add_to(m)
 
-        # Agregar un marcador con la distancia total
         distance_popup = folium.Popup(f"Distancia total: {total_distance:.2f} km", max_width=300)
         folium.Marker(
             location=[avg_lat, avg_lon],
@@ -210,7 +209,6 @@ def find_shortest_path():
         m.save('shortest_path_map.html')
         webbrowser.open('shortest_path_map.html')
 
-        # Actualizar la etiqueta de distancia
         distance_label.config(text=f"Distancia total: {total_distance:.2f} km")
 
     except Exception as e:
@@ -224,13 +222,11 @@ def setup_tkinter(root):
     window_width, window_height = 900, 600
     root.geometry(f"{window_width}x{window_height}")
 
-    # Establecer el fondo de pantalla
     background_image = Image.open("img/fondoaurora.jpg")
     background_photo = ImageTk.PhotoImage(background_image.resize((window_width, window_height)))
     background_label = tk.Label(root, image=background_photo)
     background_label.place(relwidth=1, relheight=1)
 
-    # Encabezado transparente
     header = tk.Frame(root, bg="black", bd=0)
     header.place(relwidth=1, relheight=0.1)
     title_label = tk.Label(
@@ -242,7 +238,6 @@ def setup_tkinter(root):
     )
     title_label.pack(pady=10)
 
-    # Footer transparente
     footer = tk.Frame(root, bg="black", bd=0)
     footer.place(relwidth=1, relx=0, rely=0.9)
     footer_label = tk.Label(
@@ -254,17 +249,14 @@ def setup_tkinter(root):
     )
     footer_label.pack(pady=10)
 
-    # Contenedor principal para los widgets
-    main_frame = tk.Frame(root, bg="black", bd=5)  # Fondo negro    
+    main_frame = tk.Frame(root, bg="black", bd=5)      
     main_frame.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.8, relheight=0.7)
 
-    # Logo en la esquina superior izquierda
     logo_image = Image.open("img/logoupcc.png")
     logo_photo = ImageTk.PhotoImage(logo_image.resize((50, 50)))
     logo_label = tk.Label(root, image=logo_photo, bg="black")
     logo_label.place(x=20, y=20)
 
-    # Botón para cargar estaciones
     load_button = tk.Button(
         main_frame,
         text="Iniciar Dataset",
@@ -276,24 +268,20 @@ def setup_tkinter(root):
     )
     load_button.pack(pady=10)
 
-    # Variables de las estaciones
     start_station_var = tk.StringVar(root)
     end_station_var = tk.StringVar(root)
     num_intermediate_stations_var = tk.StringVar(root)
 
-    # Estación inicial
     start_label = tk.Label(main_frame, text="Estación inicial:", font=("Helvetica", 14), bg="black", fg="white")
     start_label.pack(pady=5)
     start_station_menu = ttk.Combobox(main_frame, textvariable=start_station_var, state="readonly")
     start_station_menu.pack(pady=5)
 
-    # Estación final
     end_label = tk.Label(main_frame, text="Estación final:", font=("Helvetica", 14), bg="black", fg="white")
     end_label.pack(pady=5)
     end_station_menu = ttk.Combobox(main_frame, textvariable=end_station_var, state="readonly")
     end_station_menu.pack(pady=5)
 
-    # Número de estaciones intermedias
     num_intermediate_stations_label = tk.Label(
         main_frame, text="Número de Estaciones Intermedias:", font=("Helvetica", 14), bg="black", fg="white"
     )
@@ -301,7 +289,6 @@ def setup_tkinter(root):
     num_intermediate_stations_entry = tk.Entry(main_frame, textvariable=num_intermediate_stations_var, font=("Helvetica", 14))
     num_intermediate_stations_entry.pack(pady=5)
 
-    # Botón para calcular el camino más corto
     find_path_button = tk.Button(
         main_frame,
         text="Encontrar Camino Más Corto",
@@ -313,24 +300,20 @@ def setup_tkinter(root):
     )
     find_path_button.pack(pady=10)
 
-    # Resultado
     distance_label = tk.Label(
         main_frame, text="Distancia total: 0 km", font=("Helvetica", 14), bg="black", fg="white"
     )
     distance_label.pack(pady=10)
 
-    # Centrar ventana en la pantalla
     root.update_idletasks()
     x = (root.winfo_screenwidth() // 2) - (window_width // 2)
     y = (root.winfo_screenheight() // 2) - (window_height // 2)
     root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
-    # Mantener referencias para evitar el recolector de basura
     root.background_photo = background_photo
     root.logo_photo = logo_photo
 
 
-# Inicializar la interfaz de Tkinter
 if __name__ == "__main__":
     root = tk.Tk()
     setup_tkinter(root)

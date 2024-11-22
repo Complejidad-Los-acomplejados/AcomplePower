@@ -9,33 +9,33 @@ from ui.ui import draw_header, draw_footer, draw_text
 from acomplexpower import setup_tkinter
 import tkinter as tk
 
-# Inicializar Pygame
+
 pygame.init()
 pygame.mixer.init()
 
-# Inicializar fuentes después de inicializar Pygame
-font = pygame.font.SysFont("Helvetica", 40)  # Aumentar el tamaño de la fuente
-small_font = pygame.font.SysFont("Helvetica", 30)
-footer_font = pygame.font.SysFont("Helvetica", 34)  # Fuente más grande para el footer
 
-# Configuración de pantalla más pequeña y centrada
+font = pygame.font.SysFont("Helvetica", 40) 
+small_font = pygame.font.SysFont("Helvetica", 30)
+footer_font = pygame.font.SysFont("Helvetica", 34)  
+
+
 window_width, window_height = 900, 600
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 screen = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption("AcomplePower")
 
-# Cargar recursos
+
 assets = load_assets(window_width, window_height)
 
-# Cargar icono de audio
+
 audio_icon = pygame.image.load("img/audio_icon.png")
 audio_icon = pygame.transform.scale(audio_icon, (50, 50))
 audio_button_rect = audio_icon.get_rect(topleft=(window_width - 60, 10))
 
-# Ejecutar la animación de pre-home
+
 pre_home_animation(screen, window_width, window_height)
 
-# Variables de animación y estado
+
 logo_pulse = 1
 pulse_direction = 1
 logo_clicked = False
@@ -45,11 +45,11 @@ logo_target_x = logo_x
 paused = False
 music_muted = False
 
-# Crear la ventana de Tkinter
-root = tk.Tk()
-root.withdraw()  # Ocultar la ventana de Tkinter hasta que se necesite
 
-# Bucle principal
+root = tk.Tk()
+root.withdraw()  
+
+
 running = True
 hovered_start = False
 hovered_exit = False
@@ -59,14 +59,14 @@ while running:
     screen.fill(BLACK)
     screen.blit(assets['background_image'], (0, 0))
 
-    # Dibujar el header
+
     draw_header(screen, window_width)
 
-    # Dibujar el botón de audio
+
     screen.blit(audio_icon, audio_button_rect.topleft)
 
     if not paused:
-        # Animación de pulsación para el logo
+
         if not logo_clicked:
             logo_size = 400 + logo_pulse
             logo_pulse += pulse_direction
@@ -78,20 +78,17 @@ while running:
         logo_image_scaled = pygame.transform.scale(assets['logo_surface'], (logo_size, logo_size))
 
         if logo_clicked:
-            logo_target_x = window_width // 2 - 350  # Mover el logo a la izquierda
+            logo_target_x = window_width // 2 - 350  
         else:
             logo_target_x = window_width // 2 - logo_size // 2
 
-        # Deslizar el logo hacia la izquierda
         logo_x += (logo_target_x - logo_x) * 0.1
 
-        # Dibuja los botones solo si el logo ha sido clicado
         if logo_clicked:
             mx, my = pygame.mouse.get_pos()
 
-            # Botón Start
             start_button_rect.x = logo_x + logo_size // 2
-            start_button_rect.y = logo_y + logo_size // 2 - 95  # Ajusta esta línea para cambiar la altura del botón Start
+            start_button_rect.y = logo_y + logo_size // 2 - 95  
             if start_button_rect.collidepoint((mx, my)):
                 pygame.draw.rect(screen, HOVER_COLOR, animate_button(start_button_rect), border_radius=5)
                 if not hovered_start:
@@ -102,9 +99,9 @@ while running:
                 hovered_start = False
             draw_text("Start", font, FONT_COLOR, screen, start_button_rect.centerx + 100, start_button_rect.centery)
 
-            # Botón Exit
+    
             exit_button_rect.x = logo_x + logo_size // 2
-            exit_button_rect.y = logo_y + logo_size // 2 + 15  # Ajusta esta línea para cambiar la altura del botón Exit
+            exit_button_rect.y = logo_y + logo_size // 2 + 15  
             if exit_button_rect.collidepoint((mx, my)):
                 pygame.draw.rect(screen, HOVER_COLOR, animate_button(exit_button_rect), border_radius=5)
                 if not hovered_exit:
@@ -117,21 +114,16 @@ while running:
 
         screen.blit(logo_image_scaled, (logo_x, logo_y))
 
-        # Dibujar el footer
         draw_footer(screen, window_width, window_height)
     else:
-        # Oscurecer el fondo
         overlay = pygame.Surface((window_width, window_height), pygame.SRCALPHA)
         overlay.fill(PAUSE_OVERLAY_COLOR)
         screen.blit(overlay, (0, 0))
 
-        # Dibuja el menú de pausa
         mx, my = pygame.mouse.get_pos()
 
-        # Fondo detrás de los botones del menú de pausa
         pygame.draw.rect(screen, BUTTON_BACKGROUND_COLOR, pause_button_background_rect, border_radius=10)
 
-        # Botón Resume
         if resume_button_rect.collidepoint((mx, my)):
             pygame.draw.rect(screen, HOVER_COLOR, animate_button(resume_button_rect), border_radius=5)
             if not hovered_resume:
@@ -142,7 +134,7 @@ while running:
             hovered_resume = False
         draw_text("Regresar", font, FONT_COLOR, screen, resume_button_rect.centerx, resume_button_rect.centery)
 
-        # Botón Quit
+   
         if quit_button_rect.collidepoint((mx, my)):
             pygame.draw.rect(screen, HOVER_COLOR, animate_button(quit_button_rect), border_radius=5)
             if not hovered_quit:
@@ -153,7 +145,7 @@ while running:
             hovered_quit = False
         draw_text("Salir", font, FONT_COLOR, screen, quit_button_rect.centerx, quit_button_rect.centery)
 
-    # Eventos y control de salida
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -173,9 +165,9 @@ while running:
                 elif logo_clicked:
                     if start_button_rect.collidepoint((mx, my)):
                         print("Start button pressed")
-                        root.deiconify()  # Mostrar la ventana de Tkinter
+                        root.deiconify() 
                         setup_tkinter(root)
-                        root.update()  # Actualizar la ventana de Tkinter
+                        root.update() 
                     elif exit_button_rect.collidepoint((mx, my)):
                         pygame.quit()
                         sys.exit()
@@ -191,4 +183,4 @@ while running:
 
     pygame.display.flip()
     pygame.time.Clock().tick(60)
-    root.update()  # Mantener la ventana de Tkinter actualizada
+    root.update()  
